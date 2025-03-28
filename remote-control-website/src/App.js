@@ -7,20 +7,21 @@ function App() {
 
   const connectBluetooth = async () => {
     try {
-      const device = await navigator.bluetooth.requestDevice({
+      const btDevice = await navigator.bluetooth.requestDevice({
         acceptAllDevices: true,
-        optionalServices: ["0000ffe0-0000-1000-8000-00805f9b34fb"], //service UUID
+        optionalServices: ["0000ffe0-0000-1000-8000-00805f9b34fb"], // service UUID
       });
-      const server = await device.gatt.connect();
+      const server = await btDevice.gatt.connect();
       const service = await server.getPrimaryService(
-        "0000ffe0-0000-1000-8000-00805f9b34fb" //service UUID
+        "0000ffe0-0000-1000-8000-00805f9b34fb" // service UUID
       );
-      const characteristic = await service.getCharacteristic(
-        "0000ffe1-0000-1000-8000-00805f9b34fb" //characteristic UUID
+      const btCharacteristic = await service.getCharacteristic(
+        "0000ffe1-0000-1000-8000-00805f9b34fb" // characteristic UUID
       );
-      setDevice(device);
-      setCharacteristic(characteristic);
-      console.log("Bluetooth connected!");
+      setDevice(btDevice);
+      setCharacteristic(btCharacteristic);
+      console.log("Bluetooth connected");
+      console.log(device);
     } catch (error) {
       console.error("Bluetooth connection failed:", error);
     }
