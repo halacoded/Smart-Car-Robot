@@ -3,6 +3,11 @@
 ## Overview
 This project involves designing, building, and programming a robot capable of both remote-controlled operation and autonomous navigation. The robot Detection  lane while avoiding obstacles using Arduino and Raspberry Pi. Part of Kuwait University, Robotics class with Dr. Alshaibani.
 
+<p align="center">
+  <img src="Photos/car3.jpg" alt="Car 3" width="45%">
+  <img src="Photos/car4.jpg" alt="Car 4" width="45%">
+</p>
+
 ### Project Phases:
 1. **Phase 1:** Assembly and remote operation.
 2. **Phase 2:** Autonomous driving with obstacle avoidance.
@@ -37,6 +42,9 @@ This project involves designing, building, and programming a robot capable of bo
 ### **Assembly & Operation**
 - Flask web server allows manual control (forward, backward, left, right).
 - Commands sent via UART to Arduino, which drives motors.
+<p align="center">
+  <img src="Photos/pahse1-website.png" alt="Phase 1 Website" width="30%">
+</p>
 
 ## Phase 2: Autonomous Mode
 
@@ -49,6 +57,10 @@ This project involves designing, building, and programming a robot capable of bo
 ### **Obstacle Avoidance**
 - Ultrasonic sensors detect obstacles (threshold: 20cm).
 - If an obstacle is detected, the robot switches lanes and signals with LEDs.
+  
+<p align="center">
+  <img src="Photos/phase2-website.jpg" alt="Phase 2 Website" width="30%">
+</p>
 
 ## Setup & Usage
 
@@ -70,6 +82,15 @@ This project involves designing, building, and programming a robot capable of bo
 ### **Robot Demo**
 - Place robot on a track with lanes and obstacles.
 - Switch between manual and autonomous modes.
+
+<p align="center">
+  <img src="Photos/maze.jpg" alt="Maze" width="30%">
+</p>
+
+<p align="center">
+  <img src="Photos/car1.jpg" alt="Car 1" width="45%">
+  <img src="Photos/car2.jpg" alt="Car 2" width="30%">
+</p>
 
 ## Challenges & Improvements
 
