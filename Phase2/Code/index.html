@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>KAYO Robotics - Q Learning</title>
+    <style>
+      :root {
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #1e293b;
+        --text-light: #64748b;
+
+        --green-500: #22c55e;
+        --green-600: #16a34a;
+
+        --red-500: #ef4444;
+        --red-600: #dc2626;
+
+        --blue-500: #3b82f6;
+        --blue-600: #2563eb;
+
+        --yellow-500: #eab308;
+        --yellow-600: #ca8a04;
+
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+
+        --border: var(--gray-200);
+        --shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+        font-family: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      body {
+        background-color: var(--bg);
+        padding: 1rem;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .control-panel {
+        background: var(--card);
+        border-radius: 12px;
+        padding: 2rem;
+        width: 100%;
+        max-width: 600px;
+        box-shadow: var(--shadow);
+      }
+
+      .header {
+        margin-bottom: 2rem;
+        text-align: center;
+      }
+
+      .header h1 {
+        font-weight: 600;
+        font-size: 1.8rem;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+      }
+
+      .sensor-display {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .sensor-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+
+      .sensor-label {
+        font-size: 0.9rem;
+        color: var(--text-light);
+      }
+
+      .sensor-value {
+        width: 60px;
+        height: 60px;
+        background-color: var(--gray-200);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 1.5rem;
+      }
+
+      .control-buttons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+      }
+
+      .control-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: white;
+      }
+
+      .start-button {
+        background-color: var(--green-500);
+      }
+
+      .start-button:hover {
+        background-color: var(--green-600);
+        transform: translateY(-2px);
+      }
+
+      .stop-button {
+        background-color: var(--red-500);
+      }
+
+      .stop-button:hover {
+        background-color: var(--red-600);
+        transform: translateY(-2px);
+      }
+
+      .pause-button {
+        background-color: var(--yellow-500);
+      }
+
+      .pause-button:hover {
+        background-color: var(--yellow-600);
+        transform: translateY(-2px);
+      }
+
+      .status-display {
+        text-align: center;
+        padding: 1rem;
+        border-radius: 8px;
+        background-color: var(--gray-200);
+        margin-top: 1rem;
+        font-weight: 500;
+      }
+
+      .training-info {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: var(--gray-200);
+        border-radius: 8px;
+        text-align: center;
+      }
+
+      .training-info p {
+        margin-bottom: 0.5rem;
+        color: var(--text-light);
+      }
+
+      .training-info span {
+        font-weight: 600;
+        color: var(--text);
+      }
+
+      /* Manual Control Styles */
+      .manual-control {
+        margin-top: 2rem;
+        width: 100%;
+      }
+
+      .manual-control-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+      }
+
+      .manual-button {
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        border: none;
+        font-weight: 500;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        color: white;
+      }
+
+      .start-manual-button {
+        background-color: var(--blue-500);
+      }
+
+      .start-manual-button:hover {
+        background-color: var(--blue-600);
+        transform: translateY(-2px);
+      }
+
+      .stop-manual-button {
+        background-color: var(--red-500);
+      }
+
+      .stop-manual-button:hover {
+        background-color: var(--red-600);
+        transform: translateY(-2px);
+      }
+
+      .directional-pad {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        max-width: 300px;
+        margin: 0 auto 1.5rem;
+      }
+
+      .dpad-button {
+        aspect-ratio: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        padding: 0;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .dpad-forward {
+        background-color: var(--green-500);
+        color: white;
+      }
+
+      .dpad-forward:hover {
+        background-color: var(--green-600);
+        transform: translateY(-2px);
+      }
+
+      .dpad-left,
+      .dpad-right,
+      .dpad-back {
+        background-color: var(--green-400);
+        color: white;
+      }
+
+      .dpad-left:hover,
+      .dpad-right:hover,
+      .dpad-back:hover {
+        background-color: var(--green-500);
+        transform: translateY(-2px);
+      }
+
+      .dpad-stop {
+        background-color: var(--yellow-500);
+        color: white;
+      }
+
+      .dpad-stop:hover {
+        background-color: var(--yellow-600);
+        transform: translateY(-2px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="control-panel">
+      <div class="header">
+        <h1>KAYO Line Follower</h1>
+        <p>Q-Learning Autonomous Training</p>
+      </div>
+
+      <!-- Sensor display -->
+      <div class="sensor-display">
+        <div class="sensor-item">
+          <span class="sensor-label">Left IR Sensor</span>
+          <div class="sensor-value" id="ir-left">0</div>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">Middle IR Sensor</span>
+          <div class="sensor-value" id="ir-middle">0</div>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">Right IR Sensor</span>
+          <div class="sensor-value" id="ir-right">0</div>
+        </div>
+      </div>
+
+      <!-- Ultrasonic Sensor display -->
+      <div class="sensor-display" style="margin-top: 1rem">
+        <div class="sensor-item">
+          <span class="sensor-label">Left Ultrasonic</span>
+          <div class="sensor-value" id="ultrasonic-left">0</div>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">Middle Ultrasonic</span>
+          <div class="sensor-value" id="ultrasonic-middle">0</div>
+        </div>
+        <div class="sensor-item">
+          <span class="sensor-label">Right Ultrasonic</span>
+          <div class="sensor-value" id="ultrasonic-right">0</div>
+        </div>
+      </div>
+
+      <!-- Control buttons -->
+      <div class="control-buttons">
+        <button onclick="startTraining()" class="control-button start-button">
+          Start Training
+        </button>
+        <button onclick="pauseTraining()" class="control-button pause-button">
+          Pause Training
+        </button>
+        <button onclick="stopTraining()" class="control-button stop-button">
+          Stop Training
+        </button>
+      </div>
+
+      <!-- Status display -->
+      <div class="status-display" id="status-display">Status: Ready</div>
+
+      <!-- Training info -->
+      <div class="training-info">
+        <p>Training Sessions: <span id="training-sessions">0</span></p>
+        <p>Current Reward: <span id="current-reward">0</span></p>
+      </div>
+
+      <!-- Manual Control Section -->
+      <div class="manual-control">
+        <h2 style="text-align: center; margin-bottom: 1rem">Manual Control</h2>
+
+        <div class="manual-control-buttons">
+          <button
+            onclick="sendCommand('M')"
+            class="manual-button start-manual-button"
+          >
+            Start Manual (M)
+          </button>
+          <button
+            onclick="sendCommand('X')"
+            class="manual-button stop-manual-button"
+          >
+            Stop Manual (X)
+          </button>
+        </div>
+
+        <div class="directional-pad">
+          <button
+            onclick="sendCommand('forward')"
+            class="dpad-button dpad-forward"
+            style="grid-column: 2; grid-row: 1"
+          >
+            ▲
+          </button>
+          <button
+            onclick="sendCommand('left')"
+            class="dpad-button dpad-forward"
+            style="grid-column: 1; grid-row: 2"
+          >
+            ◀
+          </button>
+          <button
+            onclick="sendCommand('stop')"
+            class="dpad-button dpad-stop"
+            style="grid-column: 2; grid-row: 2"
+          >
+            ⏹
+          </button>
+          <button
+            onclick="sendCommand('right')"
+            class="dpad-button dpad-forward"
+            style="grid-column: 3; grid-row: 2"
+          >
+            ▶
+          </button>
+          <button
+            onclick="sendCommand('back')"
+            class="dpad-button dpad-forward"
+            style="grid-column: 2; grid-row: 3"
+          >
+            ▼
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Function to update sensor display
+      function updateSensors() {
+        fetch("/get_sensors")
+          .then((response) => response.json())
+          .then((data) => {
+            // Update sensor values
+            document.getElementById("ir-left").textContent = data.IR_L;
+            document.getElementById("ir-middle").textContent = data.IR_M;
+            document.getElementById("ir-right").textContent = data.IR_R;
+
+            // Update ultrasonic values if they exist in the response
+            if (data.ULTRASONIC_L !== undefined) {
+              document.getElementById("ultrasonic-left").textContent =
+                data.ULTRASONIC_L;
+            }
+            if (data.ULTRASONIC_M !== undefined) {
+              document.getElementById("ultrasonic-middle").textContent =
+                data.ULTRASONIC_M;
+            }
+            if (data.ULTRASONIC_R !== undefined) {
+              document.getElementById("ultrasonic-right").textContent =
+                data.ULTRASONIC_R;
+            }
+
+            // Update sensor colors based on value
+            updateSensorColor("ir-left", data.IR_L);
+            updateSensorColor("ir-middle", data.IR_M);
+            updateSensorColor("ir-right", data.IR_R);
+
+            // Update training info
+            document.getElementById("training-sessions").textContent =
+              data.training_sessions || 0;
+            document.getElementById("current-reward").textContent =
+              data.current_reward || 0;
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function updateSensorColor(elementId, value) {
+        const element = document.getElementById(elementId);
+        if (value === 1) {
+          element.style.backgroundColor = "#000000";
+          element.style.color = "#ffffff";
+        } else {
+          element.style.backgroundColor = "#e2e8f0";
+          element.style.color = "#000000";
+        }
+      }
+
+      // Training control functions
+      function startTraining() {
+        fetch("/start_training")
+          .then((response) => response.json())
+          .then((data) => {
+            updateStatus(data.message);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            updateStatus("Error starting training");
+          });
+      }
+
+      function pauseTraining() {
+        fetch("/pause_training")
+          .then((response) => response.json())
+          .then((data) => {
+            updateStatus(data.message);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            updateStatus("Error pausing training");
+          });
+      }
+
+      function stopTraining() {
+        fetch("/stop_training")
+          .then((response) => response.json())
+          .then((data) => {
+            updateStatus(data.message);
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            updateStatus("Error stopping training");
+          });
+      }
+
+      // Manual control function
+      function sendCommand(cmd) {
+        fetch(`/send_command/${cmd}`)
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "success") {
+              // Command successful
+              if (cmd === "M") {
+                updateStatus("Manual Mode Started");
+              } else if (cmd === "X") {
+                updateStatus("Manual Mode Stopped");
+              }
+            }
+          })
+          .catch((error) => console.error("Error:", error));
+      }
+
+      function updateStatus(message) {
+        const statusDisplay = document.getElementById("status-display");
+        if (statusDisplay) {
+          statusDisplay.textContent = `Status: ${message}`;
+
+          // Change color based on status
+          if (
+            message.includes("started") ||
+            message.includes("Manual Mode Started")
+          ) {
+            statusDisplay.style.backgroundColor = "#dcfce7";
+            statusDisplay.style.color = "#166534";
+          } else if (message.includes("paused")) {
+            statusDisplay.style.backgroundColor = "#fef9c3";
+            statusDisplay.style.color = "#854d0e";
+          } else if (
+            message.includes("stopped") ||
+            message.includes("Manual Mode Stopped")
+          ) {
+            statusDisplay.style.backgroundColor = "#fee2e2";
+            statusDisplay.style.color = "#991b1b";
+          } else {
+            statusDisplay.style.backgroundColor = "#e2e8f0";
+            statusDisplay.style.color = "#1e293b";
+          }
+        }
+      }
+
+      // Update sensors every 300ms
+      setInterval(updateSensors, 300);
+
+      // Initial update when page loads
+      updateSensors();
+    </script>
+  </body>
+</html>
